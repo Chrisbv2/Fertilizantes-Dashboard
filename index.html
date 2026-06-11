@@ -1568,7 +1568,8 @@ function flTab(t,b){b.parentElement.querySelectorAll(".stab").forEach(function(x
 
 function sgTab(t,b){b.parentElement.querySelectorAll(".stab").forEach(function(x){x.classList.remove("active")});b.classList.add("active");["res","graf","det","llam","comp"].forEach(function(x){var el=document.getElementById("sgt-"+x);if(el)el.classList.toggle("hidden",x!==t)});if(t==="graf")setTimeout(function(){Object.values(charts).forEach(function(c){if(c.resize)c.resize()})},50);if(t==="comp")renderComparativo();if(t==="llam")renderLlamPub();}
 
-var _llamFilter="",_llamExpZ={},_llamExpC={};
+var _llamFilter="",_llamExpZ={},_llamZonaList=[];
+function _llamTogZ(i){var k=_llamZonaList[i];if(!k)return;if(_llamExpZ[k])delete _llamExpZ[k];else _llamExpZ[k]=true;renderLlamPub();}
 function _llamBadgesPub(lls){
   var nums=Object.keys(lls||{}).map(Number).sort();
   if(!nums.length)return '<span style="color:var(--dim);font-size:10px">\u2014</span>';
@@ -1616,8 +1617,9 @@ function renderLlamPub(){
   var zonas=Object.keys(byZona).sort(function(a,b){var na=parseInt(a,10),nb=parseInt(b,10);if(!isNaN(na)&&!isNaN(nb))return na-nb;return String(a).localeCompare(String(b),"es");});
   var html=kpis+controles+'<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">';
   if(!zonas.length){el.innerHTML=html+'<p style="color:var(--dim);padding:14px;font-size:12px">Sin CEDAs con los filtros actuales.</p></div>';return}
-  zonas.forEach(function(zk){var z=byZona[zk];var zExp=!!_llamExpZ[zk]||!!search;var arrow=zExp?"\u25be":"\u25b8";
-    html+='<div onclick="_llamExpZ[\''+zk.replace(/\\/g,\'\\\\\').replace(/\'/g,\'\\\\\\\'\')+\'\']=!_llamExpZ[\''+zk.replace(/\\/g,\'\\\\\').replace(/\'/g,\'\\\\\\\'\')+\'\'];renderLlamPub()" style="background:#1e5b4f;color:#fff;padding:8px 12px;font-weight:700;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><span><span style="display:inline-block;width:14px">'+arrow+'</span>Zona '+zk+' '+_llamBadgesPub(z.llAgg)+'</span><span style="font-size:11px;opacity:0.85">'+N(z.cedas.length)+' CEDAs \u00b7 '+N(z.totCand)+' \u2265120d \u00b7 '+N(z.totPend)+' pend.</span></div>';
+  _llamZonaList=zonas.slice();
+  zonas.forEach(function(zk,zi){var z=byZona[zk];var zExp=!!_llamExpZ[zk]||!!search;var arrow=zExp?"\u25be":"\u25b8";
+    html+='<div onclick="_llamTogZ('+zi+')" style="background:#1e5b4f;color:#fff;padding:8px 12px;font-weight:700;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><span><span style="display:inline-block;width:14px">'+arrow+'</span>Zona '+zk+' '+_llamBadgesPub(z.llAgg)+'</span><span style="font-size:11px;opacity:0.85">'+N(z.cedas.length)+' CEDAs \u00b7 '+N(z.totCand)+' \u2265120d \u00b7 '+N(z.totPend)+' pend.</span></div>';
     if(zExp){z.cedas.forEach(function(c){
       html+='<div style="background:#f7f9fa;border-top:1px solid var(--border);padding:8px 12px 8px 30px;font-size:12px;display:flex;justify-content:space-between;align-items:center"><span><b>'+c.nombre+'</b><span style="color:var(--dim);font-family:monospace;font-size:10px;margin-left:6px">'+c.folio+'</span> '+_llamBadgesPub(c.llamados)+'</span><span style="font-size:11px;color:var(--dim)">m\u00e1x ll.'+N(c.maxLlamado||0)+(c.candDescartar>0?' \u00b7 <b style="color:#611232">'+N(c.candDescartar)+' \u2265120d</b>':"")+'</span></div>';
     });}
